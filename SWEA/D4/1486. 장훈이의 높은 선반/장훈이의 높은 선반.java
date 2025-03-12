@@ -46,10 +46,12 @@ public class Solution {
     if (start == N) {
       return;
     }
-
-
-    subset(start + 1, sum + H[start]);
-    subset(start + 1, sum);
+//for문 부분집합 방식!!!!
+// 현재 원소를 고려하지 않은 상태는 이미 for문 전에 결정됨(즉, 아무것도 추가하지 않은 채로 for문 시작)
+    for (int i = start; i < N; i++) {
+        // 현재 원소 포함하는 경우만 한 번 재귀 호출
+        subset(i + 1, sum + H[i]);
+    }
 
 
   }
