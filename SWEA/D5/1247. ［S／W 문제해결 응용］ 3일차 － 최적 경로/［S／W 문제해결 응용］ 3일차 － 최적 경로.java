@@ -1,58 +1,88 @@
 
-import java.util.Scanner;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.StringTokenizer;
 
 public class Solution {
-	static int N,hx,hy,Min;
-    static int[][] cmap;
-    static boolean[] visited; 
-    
-    
-	public static void main(String[] args) {
-		Scanner sc=new Scanner(System.in);
-		int T=sc.nextInt();
-		for(int tc=1;tc<=T;tc++) {
-			
-			N=sc.nextInt();
-			int fx=sc.nextInt();//회사 출발
-			int fy=sc.nextInt();
-			 hx=sc.nextInt();//집 도착
-			hy=sc.nextInt();
-			cmap=new int[N][2];
-			
-			Min=Integer.MAX_VALUE;
-			for(int i=0;i<N;i++) {
-				cmap[i][0]=sc.nextInt();
-				cmap[i][1]=sc.nextInt();
-			}
-			
-			visited=new boolean[N];
-			
-			go(0,fx,fy,0);
-            System.out.println("#"+tc+" "+ Min);
-		}
-	}
-	
-	static void go(int cnt,int x,int y,int sum) {
-		if(cnt==N) {
-			int end=distance(hx,hy,x,y)+sum;
-			Min=Math.min(Min, end);
-			return;
-		}
-		if(sum>Min) return;
-		for(int i=0;i<N;i++) {
-			if(!visited[i]) {
-				visited[i]=true;
-				int newsum=sum+distance(x,y,cmap[i][0],cmap[i][1]);
-				go(cnt+1,cmap[i][0],cmap[i][1],newsum);
-				visited[i]=false;
-				
-			}
-		}
-	}
-	static int distance(int x1,int y1,int x2,int y2) {
-		return Math.abs(x1-x2)+Math.abs(y1-y2);
-	}
+  static class Location {
+    public int x;
+    public int y;
+
+    public Location(int x, int y) {
+      this.x = x;
+      this.y = y;
+    }
+
+  }
+
+  public static void main(String[] args) throws Exception {
+    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+    int T = Integer.parseInt(br.readLine());
+    for (int tc = 1; tc <= T; tc++) {
+      N = Integer.parseInt(br.readLine());
+      StringTokenizer st = new StringTokenizer(br.readLine());
+
+      // 회사 좌표
+      int x = Integer.parseInt(st.nextToken());
+      int y = Integer.parseInt(st.nextToken());
+      Location company = new Location(x, y);
+
+      // 집 좌표
+      x = Integer.parseInt(st.nextToken());
+      y = Integer.parseInt(st.nextToken());
+      home = new Location(x, y);
+
+      // 고객 좌표 N개
+      customers = new Location[N];
+      for (int i = 0; i < N; i++) {
+        x = Integer.parseInt(st.nextToken());
+        y = Integer.parseInt(st.nextToken());
+        customers[i] = new Location(x, y);
+
+      }
+
+      // 회사에서 출발
+      MIN = Integer.MAX_VALUE;
+      visited = new boolean[N];
+      go(company, 0, 0);
+
+      System.out.println("#" + tc + " " + MIN);
+
+    }
+
+  }
+
+  static int N, MIN;
+  static boolean[] visited;
+  static Location home;
+  static Location[] customers;
+
+  static int distance(Location lc1, Location lc2) {
+    return Math.abs(lc1.x - lc2.x) + Math.abs(lc1.y - lc2.y);
+  }
+
+  static void go(Location lc, int cnt, int distSum) {
+    if (cnt == N) {// 모든 고객을 방문함
+      distSum += distance(lc, home);
+      MIN = Math.min(MIN, distSum);
+      return;
+    }
+
+    if (distSum > MIN)
+      return;
+
+    // 순열
+    for (int i = 0; i < N; i++) {
+      // 방문하지 않았다면
+      if (!visited[i]) {
+        visited[i] = true;
+        int newdistSum = distSum + distance(lc, customers[i]);
+        go(customers[i], cnt + 1, newdistSum);
+        visited[i] = false;
+      }
+    }
+
+  }
+
 }
-  
-
-
