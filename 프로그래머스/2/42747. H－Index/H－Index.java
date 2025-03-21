@@ -3,7 +3,7 @@ class Solution {
     public int solution(int[] citations) {
         int answer = 0;
 
-        // 인용 수로 정렬해서 뒤에서 h-1번째 인용수가 h여야 함
+        // 인용 수로 정렬해서 뒤에서 h번째 인용수가 h 이상여야 함
         
         Arrays.sort(citations);
         int n=citations.length;
