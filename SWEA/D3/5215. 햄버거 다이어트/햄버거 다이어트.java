@@ -1,40 +1,44 @@
-
-import java.util.Scanner;
+import java.io.*;
+import java.util.*;
 
 public class Solution {
-  public static void main(String[] args) {
-    Scanner sc = new Scanner(System.in);
-    int TC=sc.nextInt();
-    for(int tc=1;tc<=TC;tc++) {
-    N=sc.nextInt();
-    L=sc.nextInt();
-    //재료 포함/미포함-> 부분집합 합
-    T=new int[N];
-    K=new int[N];
-  
-    for(int i=0;i<N;i++) {
-    	T[i]=sc.nextInt();//맛
-    	K[i]=sc.nextInt();//칼로리
+
+    static int N, L;    
+    static int[] taste, cal;     
+    static int maxTaste;         
+
+    public static void main(String[] args) throws IOException {
+        Scanner sc = new Scanner(System.in);
+        int T = sc.nextInt();   
+
+        for (int tc = 1; tc <= T; tc++) {
+            N = sc.nextInt();     
+            L = sc.nextInt();   
+
+            taste = new int[N];
+            cal = new int[N];
+
+            for (int i = 0; i < N; i++) {
+                taste[i] = sc.nextInt();
+                cal[i] = sc.nextInt();
+            }
+
+            maxTaste = 0;
+            dfs(0, 0, 0);         // 부분집합
+
+            System.out.println("#" + tc + " " + maxTaste);
+        }
     }
-    max=0;
-    subset(0,0,0);
-    
-    
-    
-    System.out.println("#"+tc+" "+max);
-  }
-  }
-  static int N,L,max;
-  static int[] K,T;
- 
-  static void subset(int idx,int Tsum,int Ksum) {
-	  
-	if(Ksum>L) return;
-	if(idx==N)  {
-		 max = Math.max(max, Tsum);
-        return;
-	}
-	subset(idx+1,Tsum,Ksum);
-	 subset(idx+1,Tsum+T[idx],Ksum+K[idx]);
-  }
+
+    static void dfs(int idx, int tSum, int cSum) {
+        if (cSum > L) return;                    
+        if (idx == N) {                           
+            maxTaste = Math.max(maxTaste, tSum); 
+            return;
+        }
+
+
+        dfs(idx + 1, tSum + taste[idx], cSum + cal[idx]);
+        dfs(idx + 1, tSum, cSum);
+    }
 }
