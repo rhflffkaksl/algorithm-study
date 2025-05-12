@@ -1,79 +1,101 @@
-import java.io.*;
 import java.util.*;
 
 public class Solution {
-    static List<Integer>[] tree;
-    static int[] depth, parent, subtreeSize;
+    static final int MAXV = 10000;
+    static final int MAXLOG = 14;  // 2^14 = 16384 > 10000
 
-    public static void main(String[] args) throws Exception {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        int T = Integer.parseInt(br.readLine());
-        StringBuilder sb = new StringBuilder();
-
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int T = sc.nextInt();
         for (int tc = 1; tc <= T; tc++) {
-            StringTokenizer st = new StringTokenizer(br.readLine());
-            int V  = Integer.parseInt(st.nextToken());
-            int E  = Integer.parseInt(st.nextToken());
-            int n1 = Integer.parseInt(st.nextToken());
-            int n2 = Integer.parseInt(st.nextToken());
+            int V = sc.nextInt();
+            int E = sc.nextInt();
+            int u = sc.nextInt();
+            int v = sc.nextInt();
 
-            tree = new ArrayList[V + 1];
-            depth = new int[V + 1];
-            parent = new int[V + 1];
-            subtreeSize = new int[V + 1];
-            // 0부터 V까지 모두 초기화
-            for (int i = 0; i <= V; i++) {
-                tree[i] = new ArrayList<>();
-                parent[i] = 0;
+            int[][] parent = new int[MAXLOG+1][V+1];
+            int[] depth = new int[V+1];
+            List<Integer>[] children = new ArrayList[V+1];
+            for (int i = 1; i <= V; i++) {
+                children[i] = new ArrayList<>();
             }
 
-            st = new StringTokenizer(br.readLine());
+            // 부모 정보 입력
             for (int i = 0; i < E; i++) {
-                int p = Integer.parseInt(st.nextToken());
-                int c = Integer.parseInt(st.nextToken());
-                parent[c] = p;
-                tree[p].add(c);
+                int p = sc.nextInt();
+                int c = sc.nextInt();
+                parent[0][c] = p;
+                children[p].add(c);
             }
-            // 루트(1번)의 부모를 자기 자신으로 설정
-            parent[1] = 1;
 
-            initializeDepth(1, 1);
-            int lca = findLowestCommonAncestor(n1, n2);
-            calculateSubtreeSize(1);
+            // 깊이 계산 (루트=1)
+            Queue<Integer> q = new LinkedList<>();
+            depth[1] = 1;
+            q.add(1);
+            while (!q.isEmpty()) {
+                int cur = q.poll();
+                for (int ch : children[cur]) {
+                    depth[ch] = depth[cur] + 1;
+                    q.add(ch);
+                }
+            }
 
-            sb.append('#').append(tc).append(' ')
-              .append(lca).append(' ')
-              .append(subtreeSize[lca]).append('\n');
+            // DP
+            for (int k = 1; k <= MAXLOG; k++) {
+                for (int i = 1; i <= V; i++) {
+                    parent[k][i] = parent[k-1][ parent[k-1][i] ];
+                }
+            }
+
+            // LCA 계산
+            int lca = getLCA(u, v, depth, parent);
+
+            int[] subtree = new int[V+1];
+            List<Integer> order = new ArrayList<>();
+            Stack<Integer> st = new Stack<>();
+            st.push(1);
+            while (!st.isEmpty()) {
+                int x = st.pop();
+                order.add(x);
+                for (int ch : children[x]) {
+                    st.push(ch);
+                }
+            }
+            // 역순으로 합산
+            for (int i = order.size()-1; i >= 0; i--) {
+                int x = order.get(i);
+                subtree[x] = 1;
+                for (int ch : children[x]) {
+                    subtree[x] += subtree[ch];
+                }
+            }
+
+            System.out.println("#" + tc + " " + lca + " " + subtree[lca]);
         }
-
-        System.out.print(sb);
+        sc.close();
     }
 
-    // 깊이 정보 초기화 DFS
-    static void initializeDepth(int node, int d) {
-        depth[node] = d;
-        for (int child : tree[node]) {
-            initializeDepth(child, d + 1);
+    // 이진 리프팅으로 LCA 구하기
+    static int getLCA(int a, int b, int[] depth, int[][] parent) {
+        if (depth[a] < depth[b]) {
+            int t = a; a = b; b = t;
         }
-    }
+        // 깊이 맞추기
+        int diff = depth[a] - depth[b];
+        for (int k = 0; k <= MAXLOG; k++) {
+            if ((diff & (1 << k)) != 0) {
+                a = parent[k][a];
+            }
+        }
+        if (a == b) return a;
 
-    // 가장 가까운 공통 조상 찾기
-    static int findLowestCommonAncestor(int a, int b) {
-        while (depth[a] > depth[b]) a = parent[a];
-        while (depth[b] > depth[a]) b = parent[b];
-        while (a != b) {
-            a = parent[a];
-            b = parent[b];
+        // 공통 조상 찾기
+        for (int k = MAXLOG; k >= 0; k--) {
+            if (parent[k][a] != parent[k][b]) {
+                a = parent[k][a];
+                b = parent[k][b];
+            }
         }
-        return a;
-    }
-
-    // 서브트리 크기 계산 DFS
-    static int calculateSubtreeSize(int node) {
-        int size = 1;
-        for (int child : tree[node]) {
-            size += calculateSubtreeSize(child);
-        }
-        return subtreeSize[node] = size;
+        return parent[0][a];
     }
 }
